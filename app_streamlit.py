@@ -1,5 +1,4 @@
 from pathlib import Path
-
 import joblib
 import pandas as pd
 import streamlit as st
@@ -47,9 +46,6 @@ feature_names = [
 
 
 st.title("Credit Score Predictor")
-st.caption("Predicts whether a loan applicant should be approved, rejected, or reviewed.")
-st.write(f"preprocessor = {preprocessor_path}")
-st.write(f"model = {model_path}")
 
 col1, col2, col3 = st.columns(3)
 
