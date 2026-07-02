@@ -5,22 +5,28 @@ import pandas as pd
 import streamlit as st
 
 
-pipeline_path = Path("models/pipeline.joblib")
+preprocessor_path = Path("models/preprocessor.joblib")
+model_path = Path("models/model.joblib")
 
 
 @st.cache_resource
-def load_pipeline():
-    return joblib.load(pipeline_path)
+def load_artifacts():
+    preprocessor = joblib.load(preprocessor_path)
+    model = joblib.load(model_path)
+    return preprocessor, model
 
 
 try:
-    pipeline = load_pipeline()
+    preprocessor, model = load_artifacts()
 except FileNotFoundError as e:
     st.error(f"Could not load model: {e}")
     st.error(
-        f"Make sure {pipeline_path} exists. "
+        f"Make sure {preprocessor_path} and {model_path} exist. "
         f"Run `python main.py` first."
     )
+    st.stop()
+except Exception as e:
+    st.error(f"Could not load model: {e}")
     st.stop()
 
 
@@ -42,7 +48,8 @@ feature_names = [
 
 st.title("Credit Score Predictor")
 st.caption("Predicts whether a loan applicant should be approved, rejected, or reviewed.")
-st.write(f"pipeline = {pipeline_path}")
+st.write(f"preprocessor = {preprocessor_path}")
+st.write(f"model = {model_path}")
 
 col1, col2, col3 = st.columns(3)
 
@@ -216,8 +223,9 @@ if st.button("Predict Credit Score", type="primary"):
         }
         input_df = pd.DataFrame([features], columns=feature_names)
 
-        probs = pipeline.predict_proba(input_df)[0]
-        pred = int(pipeline.predict(input_df)[0])
+        X = preprocessor.transform(input_df)
+        probs = model.predict_proba(X)[0]
+        pred = int(model.predict(X)[0])
         label = label_map[pred]
 
         if label == "poor":
